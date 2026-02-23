@@ -1,0 +1,88 @@
+/*
+Algorithm:
+Take input of vertices V and edges E.
+Store all edges in the format (u, v, w).
+Sort all edges in increasing order of weight.
+Initialize Disjoint Set (Union-Find):
+Each vertex is its own parent.
+Initialize size of each set as 1.
+Initialize minCost = 0 and count = 0.
+Traverse the sorted edges:
+If the two vertices of the edge belong to different components:
+Add the edge weight to minCost.
+Union the two components.
+Increment count.
+Stop when count = V - 1.
+Print minCost.
+*/
+
+#include<bits/stdc++.h>
+using namespace std;
+
+int findParent(int node, vector<int> &parent) {
+    if(parent[node] == node)
+        return node;
+    return parent[node] = findParent(parent[node], parent);
+}
+
+void unionBySize(int u, int v, vector<int> &parent, vector<int> &size) {
+    int pu = findParent(u, parent);
+    int pv = findParent(v, parent);
+
+    if(pu == pv) return;
+
+    if(size[pu] < size[pv]) {
+        parent[pu] = pv;
+        size[pv] += size[pu];
+    } else {
+        parent[pv] = pu;
+        size[pu] += size[pv];
+    }
+}
+
+int main() {
+
+    int V, E;
+    cin >> V >> E;
+
+    vector<vector<int>> edges(E, vector<int>(3));
+
+    for(int i = 0; i < E; i++) {
+        cin >> edges[i][0] >> edges[i][1] >> edges[i][2];
+    }
+
+    sort(edges.begin(), edges.end(), [](vector<int> &a, vector<int> &b) {
+        return a[2] < b[2];
+    });
+
+    vector<int> parent(V);
+    vector<int> size(V, 1);
+
+    for(int i = 0; i < V; i++)
+        parent[i] = i;
+
+    int minCost = 0;
+    int count = 0;
+
+    for(auto &edge : edges) {
+        int u = edge[0];
+        int v = edge[1];
+        int w = edge[2];
+
+        if(findParent(u, parent) != findParent(v, parent)) {
+            minCost += w;
+            unionBySize(u, v, parent, size);
+            count++;
+
+            if(count == V - 1)
+                break;
+        }
+    }
+
+    cout << minCost;
+
+    return 0;
+}
+
+//TIME COMPLEXITY: O(E log E)
+//Space Complexity = O(V)
